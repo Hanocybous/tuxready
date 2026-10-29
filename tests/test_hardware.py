@@ -1,4 +1,7 @@
 import json
+import sys
+
+import pytest
 
 from tuxready import hardware, report
 from tuxready.hardware import Device
@@ -143,6 +146,7 @@ def test_parse_windows_single_device_and_empty():
     assert hardware.parse_windows("") == []
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Linux /sys paths contain colons")
 def test_detect_linux_from_fake_sysfs(tmp_path):
     def pci(slot, cls, vendor, device):
         d = tmp_path / "bus" / "pci" / "devices" / f"0000:{slot}"
