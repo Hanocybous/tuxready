@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from tuxready.models import Item, Kind, Link, Result, Verdict
+from tuxready.text import strip_marks
 
 NVIDIA, AMD, INTEL = "10de", "1002", "8086"
 BROADCOM, REALTEK, MEDIATEK = "14e4", "10ec", "14c3"
@@ -211,7 +212,7 @@ def check(devices: list[Device]) -> list[Result]:
 
 
 def _result(device: Device, verdict: Verdict, summary: str, **extra) -> Result:
-    item = Item(name=device.name, kind=Kind.HARDWARE, source="hardware")
+    item = Item(name=strip_marks(device.name), kind=Kind.HARDWARE, source="hardware")
     return Result(item, verdict, summary, **extra)
 
 

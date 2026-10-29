@@ -251,6 +251,7 @@ def from_knowledge(item: Item, entry: dict) -> Result:
         how_to,
         flatpak=entry.get("flatpak"),
         alt_flatpaks=alt_flatpaks,
+        install=entry.get("install"),
     )
 
 

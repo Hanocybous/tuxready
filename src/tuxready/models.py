@@ -95,6 +95,7 @@ class Result:
     how_to: str | None = None
     flatpak: str | None = None  # Flathub ID of the item itself, when it runs natively
     alt_flatpaks: dict[str, str] = field(default_factory=dict)  # alternative name -> Flathub ID
+    install: str | None = None  # setup-script hint: "package", "vendor" or "none"
 
     @property
     def is_hardware(self) -> bool:

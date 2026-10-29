@@ -21,6 +21,11 @@ def normalize(name: str) -> str:
     return _SPACES.sub(" ", text).strip()
 
 
+def strip_marks(name: str) -> str:
+    """Remove ™ ® © (TM) (R) from a display name: 'Intel(R) Arc(TM) 140V' -> 'Intel Arc 140V'."""
+    return _SPACES.sub(" ", _DROP.sub("", name)).strip()
+
+
 def compact(name: str) -> str:
     """normalize() without spaces, so 'BrownDust2' and 'Brown Dust 2' compare equal."""
     return normalize(name).replace(" ", "")

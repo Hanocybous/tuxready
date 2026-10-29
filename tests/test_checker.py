@@ -79,6 +79,7 @@ def test_knowledge_file_is_valid():
         assert entry["names"] and entry["summary"], entry
         assert entry["verdict"] in valid, entry
         assert entry.get("kind") in (None, "app", "game"), entry
+        assert entry.get("install") in (None, "package", "vendor", "none"), entry
         for alt in entry.get("alternatives", []):
             assert alt["name"], entry
 

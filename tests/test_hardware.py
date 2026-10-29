@@ -23,7 +23,7 @@ def test_nvidia_needs_driver_and_mentions_hybrid_laptops():
     assert nvidia.verdict is Verdict.TWEAKS
     assert "two graphics chips" in nvidia.summary
     assert "Bazzite" in nvidia.how_to
-    assert results["Intel(R) UHD Graphics"].verdict is Verdict.NATIVE
+    assert results["Intel UHD Graphics"].verdict is Verdict.NATIVE
 
 
 def test_old_nvidia_generations():
@@ -50,7 +50,7 @@ def test_amd_and_wifi_rules():
     )
     assert results["AMD Radeon RX 7800 XT"].verdict is Verdict.NATIVE
     assert results["Broadcom 802.11ac Network Adapter"].verdict is Verdict.TWEAKS
-    assert results["Intel(R) Wi-Fi 6E AX211 160MHz"].verdict is Verdict.NATIVE
+    assert results["Intel Wi-Fi 6E AX211 160MHz"].verdict is Verdict.NATIVE
     assert results["Realtek RTL8852BE WiFi 6 802.11ax PCIe Adapter"].verdict is Verdict.WORKS
 
 
@@ -64,7 +64,7 @@ def test_other_rules():
         ]
     )
     assert "27c6:538c" in results["Goodix fingerprint"].summary
-    assert results["Intel(R) RST VMD Controller 9A0B"].verdict is Verdict.TWEAKS
+    assert results["Intel RST VMD Controller 9A0B"].verdict is Verdict.TWEAKS
     assert "linux-surface" in results["Microsoft Corporation Surface Laptop 5"].summary
     assert "LENOVO 21CB" not in results
 

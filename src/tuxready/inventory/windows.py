@@ -6,6 +6,7 @@ import re
 import sys
 
 from tuxready.models import Item
+from tuxready.text import strip_marks
 
 _UNINSTALL_KEYS = (
     r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
@@ -64,6 +65,7 @@ def is_user_facing(entry: dict) -> bool:
 
 def clean_name(name: str) -> str:
     """Drop trailing versions and bitness: 'Notepad++ (64-bit x64)' -> 'Notepad++'."""
+    name = strip_marks(name)
     name = re.sub(
         r"\s*\((x64|x86|64-bit|32-bit|64-bit x64|remove only|user|machine|all users)\)\s*$",
         "",

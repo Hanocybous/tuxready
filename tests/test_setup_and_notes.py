@@ -122,3 +122,15 @@ def test_script_sections():
     text = setupscript.build(results)
     assert "Install with your package manager" in text
     assert "Nothing to install, but read this" in text
+
+
+def test_install_hints_and_clean_display_names():
+    from tuxready.inventory.windows import clean_name
+
+    results = check("GitHub Copilot", clean_name("Intel® VTune(TM) Profiler"), "zoxide")
+    p = setupscript.plan(results)
+    assert "GitHub Copilot" in [name for name, _ in p.instead]
+    assert "Intel VTune Profiler" in [name for name, _ in p.vendor]
+    assert p.packages == ["zoxide"]
+    hw = hardware.check([Device("gpu", "Intel(R) Arc(TM) 140V GPU (16GB)", "8086", "64a0")])
+    assert hw[0].item.name == "Intel Arc 140V GPU (16GB)"

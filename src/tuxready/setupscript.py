@@ -57,8 +57,10 @@ def plan(results: list[Result]) -> Plan:
                 add(app_id, f"{alt_name} (another option for {name})", optional=True)
         elif r.item.kind is Kind.GAME:
             continue  # games come through Steam (added below)
+        elif r.install == "none":
+            p.instead.append((name, r.summary))
         elif r.verdict is Verdict.NATIVE:
-            if "package" in r.summary.lower():
+            if r.install == "package" or (r.install is None and "package" in r.summary.lower()):
                 p.packages.append(name)
             else:
                 p.vendor.append((name, r.summary))
