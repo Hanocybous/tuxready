@@ -67,7 +67,8 @@ Tests never touch the network: `tests/test_checker.py` swaps in a fake HTTP clie
 
 ## Releasing
 
-Bump `version` in `pyproject.toml` and `src/tuxready/__init__.py`, then:
+Bump `version` in `pyproject.toml` and `src/tuxready/__init__.py`, move the "Unreleased"
+notes in `CHANGELOG.md` under the new version, then:
 
 ```bash
 git tag v0.2.0 && git push --tags
