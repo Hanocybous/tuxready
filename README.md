@@ -1,5 +1,11 @@
 # tuxready 🐧
 
+[![CI](https://github.com/Hanocybous/tuxready/actions/workflows/ci.yml/badge.svg)](https://github.com/Hanocybous/tuxready/actions/workflows/ci.yml)
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)
+![Linux](https://img.shields.io/badge/Linux-x64-FCC624?logo=linux&logoColor=black)
+![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
 **Will your apps and games work on Linux? Find out before you switch.**
 
 tuxready scans your Windows PC (installed programs and your Steam library) and tells you,
@@ -43,6 +49,56 @@ Or point it at the Steam library on your Windows drive:
 
 ```bash
 tuxready --steam-dir "/run/media/$USER/Windows/Program Files (x86)/Steam"
+```
+
+## Supported systems
+
+| | Windows 10 / 11 | Linux | macOS |
+|---|:-:|:-:|:-:|
+| Ready-made download | ✅ `tuxready-windows-x64.exe` | ✅ `tuxready-linux-x64` | — |
+| Install with pipx (Python 3.10+) | ✅ | ✅ | ⚠️ untested |
+| Scan installed programs | ✅ | — (you've already switched) | — |
+| Scan Steam library | ✅ | ✅ native, Flatpak and Snap Steam | — |
+| Hardware check | ✅ | ✅ | — |
+| Check apps and games by name | ✅ | ✅ | ⚠️ untested |
+| Setup script | ✅ writes it, run it on Linux | ✅ | — |
+
+- The downloads are for **64-bit x86** PCs. On ARM (e.g. Snapdragon laptops, Raspberry Pi),
+  install with pipx instead.
+- The Linux download needs **glibc 2.35 or newer**: Ubuntu 22.04+, Linux Mint 21+, Fedora 36+,
+  Debian 12+, Arch, and anything newer. On older systems, use pipx.
+- The interactive view works best in **Windows Terminal** (built into Windows 11) and any Linux
+  terminal. If it looks wrong in an older console, use `--plain` for a text report.
+
+### How it's built and tested
+
+Every push runs the tests on **Ubuntu** and **Windows** with **Python 3.10 and 3.13**
+([CI](.github/workflows/ci.yml)). On Windows, the test also scans the test machine's real
+registry and hardware, so the Windows code runs for real.
+
+Each release is built by GitHub Actions ([release workflow](.github/workflows/release.yml)),
+not on someone's PC:
+
+| Download | Built on | With |
+|---|---|---|
+| `tuxready-windows-x64.exe` | Windows Server (latest) | Python 3.13 + PyInstaller, one file |
+| `tuxready-linux-x64` | Ubuntu 22.04 | Python 3.13 + PyInstaller, one file |
+| `tuxready-*.whl` / `.tar.gz` | Ubuntu (latest) | Python package for pipx/pip |
+
+Each binary is smoke-tested before upload, and `SHA256SUMS.txt` on the release page lets you
+check that your download wasn't tampered with:
+
+```bash
+sha256sum -c SHA256SUMS.txt --ignore-missing            # Linux
+Get-FileHash .\tuxready-windows-x64.exe -Algorithm SHA256  # Windows (PowerShell)
+```
+
+To build a binary yourself:
+
+```bash
+pip install . pyinstaller
+pyinstaller --onefile --name tuxready --collect-data tuxready --collect-data textual \
+  --collect-submodules rich._unicode_data packaging/entry.py   # -> dist/tuxready
 ```
 
 ## Usage

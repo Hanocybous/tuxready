@@ -186,3 +186,60 @@ def test_score_ignores_unknowns():
     assert s.percent == 50
     assert s.rated == 3 and s.total == 4
     assert "50%" in report.markdown(results)
+
+
+# Programs installed on GitHub's Windows test machine (a typical developer PC).
+DEV_PC = [
+    "AWS Command Line Interface v2",
+    "AWS SAM Command Line Interface",
+    "Azure Cosmos DB Emulator",
+    "GitHub CLI",
+    "IIS 10.0 Express",
+    "ImageMagick 7.1.2-25 Q16-HDRI (64-bit) (2026-06-04)",
+    "Inno Setup version 6.4.3",
+    "LLVM",
+    "Microsoft Azure CLI",
+    "Microsoft Azure Service Fabric",
+    "Microsoft Azure Service Fabric SDK",
+    "Microsoft SQL Server 2025 LocalDB",
+    "Microsoft SQL Server Integration Services Projects",
+    "Microsoft Web Deploy",
+    "Miniconda3 py314_26.9.3-0 (Python 3.14.8 64-bit)",
+    "MongoDB 7.0.45 2008R2Plus SSL (64 bit)",
+    "MongoDB Shell",
+    "MySQL Server",
+    "OpenSSL",
+    "PostgreSQL 17",
+    "PowerShell 7-x64",
+    "R for Windows",
+    "Rtools 4.5 (6768-6492)",
+    "sbt",
+    "Session Manager Plugin",
+    "Strawberry Perl",
+    "Windows Application Driver",
+    "WiX Toolset",
+]
+DEV_PC_NOISE = [
+    "Mozilla Maintenance Service",
+    "Microsoft System CLR Types for SQL Server 2019",
+    "Microsoft SQL Server 2016 Management Objects",
+    "Microsoft Visual Studio Installer",
+    "Microsoft Visual Studio Tools for Applications 2022",
+    "PowerShell Extensions for SQL Server 2016",
+    "Microsoft SQL Server Data-Tier Application Framework",
+    "Microsoft Web Platform Installer",
+    "Microsoft Windows Application Compatibility Fix Database",
+]
+
+
+def test_developer_pc_has_no_unknowns(monkeypatch):
+    from tuxready.inventory import windows
+
+    monkeypatch.setattr(
+        windows, "read_registry", lambda: [{"DisplayName": n} for n in DEV_PC + DEV_PC_NOISE]
+    )
+    items = windows.scan()
+    assert len(items) == len(DEV_PC)  # all the noise is hidden
+    results = make_checker({}).check_all(items)
+    unknown = [r.item.name for r in results if r.verdict is Verdict.UNKNOWN]
+    assert unknown == []

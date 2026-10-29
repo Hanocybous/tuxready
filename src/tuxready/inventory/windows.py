@@ -30,6 +30,16 @@ _NOISE = re.compile(
       | java\ (auto\ updater|update) | steamworks | epic\ online\ services
       | epic\ games\ launcher\ prerequisites
       | ea\ (app\ )?installer | battleye | easyanticheat | microsoft\ policy\ platform
+      # Helpers and runtimes that come bundled with other programs:
+      | mozilla\ maintenance\ service | google\ update | microsoft\ windows\ application\ compat
+      | microsoft\ system\ clr\ types | microsoft\ sql\ server\ \d+\ management\ objects
+      | microsoft\ sql\ server\ data-tier | powershell\ extensions\ for\ sql\ server
+      | microsoft\ visual\ studio\ (installer|tools\ for\ applications|setup)
+      | office\ 16\ click-to-run\ (extensibility|licensing|localization)
+      | teams\ meeting\ add-in | microsoft\ teams\ meeting\ add-in
+      | microsoft\ web\ platform\ installer
+      | windows\ app\ runtime | microsoft\ windows\ app\ runtime | microsoft\ ui\ xaml
+      | adobe\ (genuine|refresh\ manager|acrobat\ update) | ms\ teams\ machine | appcompat
     )""",
     re.IGNORECASE | re.VERBOSE,
 )
@@ -56,7 +66,7 @@ def clean_name(name: str) -> str:
     name = re.sub(
         r"\s*\((x64|x86|64-bit|32-bit|64-bit x64|remove only)\)\s*$", "", name, flags=re.I
     )
-    name = re.sub(r"\s+v?\d+(\.\d+)+[\w.-]*$", "", name)
+    name = re.sub(r"\s+(version\s+)?v?\d+(\.\d+)+[\w.-]*$", "", name, flags=re.I)
     return name.strip()
 
 
