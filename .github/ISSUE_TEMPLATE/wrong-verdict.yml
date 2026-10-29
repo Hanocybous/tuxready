@@ -1,0 +1,42 @@
+name: Wrong result
+description: tuxready said something wrong about an app, game or piece of hardware.
+labels: ["wrong verdict"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: Exactly as tuxready shows it.
+      placeholder: Adobe Photoshop 2025
+    validations:
+      required: true
+  - type: input
+    id: said
+    attributes:
+      label: What tuxready said
+      placeholder: "Use an alternative"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What's actually true
+      description: How does it really work on Linux? A link (ProtonDB, Flathub, a news article) helps a lot.
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Where did you run tuxready?
+      options:
+        - Windows (.exe download)
+        - Windows (pipx / pip)
+        - Linux (download)
+        - Linux (pipx / pip)
+        - Other
+  - type: input
+    id: version
+    attributes:
+      label: tuxready version
+      description: Run `tuxready --version`.
+      placeholder: tuxready 0.1.0

@@ -1,0 +1,30 @@
+name: Add an app or game
+description: tuxready said "Unknown" for something you use.
+labels: ["knowledge base"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: Exactly as tuxready shows it (or as it appears in Windows "Apps & features").
+    validations:
+      required: true
+  - type: dropdown
+    id: verdict
+    attributes:
+      label: How does it work on Linux?
+      options:
+        - Runs natively (there's a Linux version)
+        - Works (in the browser, Proton or Wine)
+        - Works with tweaks
+        - No Linux version, use an alternative
+        - Won't work
+        - Not needed on Linux
+        - I don't know
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Flathub link, best Linux alternative, or anything a new Linux user should know.

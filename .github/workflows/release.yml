@@ -71,12 +71,14 @@ jobs:
         with:
           files: out/*
           generate_release_notes: true
+          # Tags like v0.1.0-rc1 are test builds: mark them as pre-releases.
+          prerelease: ${{ contains(github.ref_name, '-') }}
 
   # Optional: publish to PyPI so people can `pipx install tuxready`.
   # One-time setup: add a "trusted publisher" for this repo on pypi.org, then set the
   # repository variable PUBLISH_PYPI to "true" (Settings → Secrets and variables → Actions).
   pypi:
-    if: vars.PUBLISH_PYPI == 'true'
+    if: vars.PUBLISH_PYPI == 'true' && !contains(github.ref_name, '-')
     needs: [release]
     runs-on: ubuntu-latest
     environment: pypi
