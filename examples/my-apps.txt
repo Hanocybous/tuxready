@@ -1,0 +1,15 @@
+# Example list for:  tuxready --list examples/my-apps.txt
+# One app or game per line. Prefix with "game:" or "app:" if a name is ambiguous.
+
+Discord
+Spotify
+Adobe Photoshop
+Microsoft Office
+Notepad++
+Logitech G HUB
+
+game: Elden Ring
+game: Counter-Strike 2
+game: Valorant
+game: Baldur's Gate 3
+steam: 1172470

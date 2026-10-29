@@ -1,0 +1,90 @@
+name: Release
+
+# Push a tag like v0.1.0 to build the downloads and publish a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  binaries:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            asset: tuxready-windows-x64.exe
+          - os: ubuntu-22.04 # older glibc, so the binary runs on more distros
+            asset: tuxready-linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install . pyinstaller
+      - name: Build
+        shell: bash
+        run: >
+          pyinstaller --onefile --name tuxready
+          --collect-data tuxready --collect-data textual
+          --collect-submodules rich._unicode_data
+          packaging/entry.py
+      - name: Smoke test
+        shell: bash
+        run: |
+          ls dist
+          ./dist/tuxready* --plain --offline Discord "game: Valorant"
+      - name: Rename
+        shell: bash
+        run: mv dist/tuxready* "dist/${{ matrix.asset }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+
+  python-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install build && python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: dist/*
+
+  release:
+    needs: [binaries, python-package]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Checksums
+        run: cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true
+
+  # Optional: publish to PyPI so people can `pipx install tuxready`.
+  # One-time setup: add a "trusted publisher" for this repo on pypi.org, then set the
+  # repository variable PUBLISH_PYPI to "true" (Settings → Secrets and variables → Actions).
+  pypi:
+    if: vars.PUBLISH_PYPI == 'true'
+    needs: [release]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
