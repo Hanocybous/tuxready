@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 from rich.text import Text
@@ -12,18 +13,21 @@ from textual.containers import Horizontal, VerticalScroll
 from textual.markup import escape
 from textual.widgets import DataTable, Footer, Header, Input, ProgressBar, Static
 
-from tuxready import report
+from tuxready import report, setupscript
 from tuxready.checker import Checker
 from tuxready.models import Item, Result, Verdict
 
-FILTERS: list[tuple[str, set[Verdict] | None]] = [
-    ("All", None),
-    ("Problems", {Verdict.BLOCKED, Verdict.ALTERNATIVE, Verdict.TWEAKS, Verdict.UNKNOWN}),
-    ("Won't work", {Verdict.BLOCKED}),
-    ("Needs alternative", {Verdict.ALTERNATIVE}),
-    ("Needs tweaks", {Verdict.TWEAKS}),
-    ("Works", {Verdict.NATIVE, Verdict.WORKS, Verdict.NOT_NEEDED}),
-    ("Unknown", {Verdict.UNKNOWN}),
+WORKING = {Verdict.NATIVE, Verdict.WORKS, Verdict.NOT_NEEDED}
+
+FILTERS: list[tuple[str, Callable[[Result], bool]]] = [
+    ("All", lambda r: True),
+    ("Problems", lambda r: r.verdict in report.ATTENTION),
+    ("Won't work", lambda r: r.verdict is Verdict.BLOCKED),
+    ("Needs alternative", lambda r: r.verdict is Verdict.ALTERNATIVE),
+    ("Needs tweaks", lambda r: r.verdict is Verdict.TWEAKS),
+    ("Works", lambda r: r.verdict in WORKING),
+    ("Unknown", lambda r: r.verdict is Verdict.UNKNOWN),
+    ("Hardware", lambda r: r.is_hardware),
 ]
 
 # Plain symbols: emoji widths vary between terminals and break the table columns.
@@ -64,6 +68,7 @@ class TuxReadyApp(App):
         Binding("f", "next_filter", "Filter"),
         Binding("slash", "search", "Search"),
         Binding("e", "export", "Save report"),
+        Binding("i", "setup_script", "Setup script"),
         Binding("escape", "clear_search", "Clear search", show=False),
         Binding("q", "quit", "Quit"),
     ]
@@ -73,13 +78,17 @@ class TuxReadyApp(App):
         checker: Checker,
         items: list[Item],
         notes: list[str],
+        hardware_results: list[Result] | None = None,
         markdown_path: str | None = None,
+        setup_path: str | None = None,
     ):
         super().__init__()
         self.checker = checker
         self.items = items
         self.notes = notes
+        self.hardware_results = hardware_results or []
         self.markdown_path = markdown_path or "tuxready-report.md"
+        self.setup_path = setup_path or "tuxready-setup.sh"
         self.results: list[Result] = []
         self.filter_index = 0
         self.search_text = ""
@@ -102,7 +111,7 @@ class TuxReadyApp(App):
         table = self.query_one(DataTable)
         table.add_column("", key="icon", width=1)
         table.add_column("Name", key="name")
-        table.add_column("Type", key="kind", width=5)
+        table.add_column("Type", key="kind", width=8)
         table.add_column("Verdict", key="verdict")
         table.focus()
         self.run_checks()
@@ -117,7 +126,7 @@ class TuxReadyApp(App):
             self.call_from_thread(self.query_one(ProgressBar).update, progress=done)
 
         results = self.checker.check_all(self.items, progress)
-        self.call_from_thread(self._show_results, results)
+        self.call_from_thread(self._show_results, results + self.hardware_results)
 
     def _show_results(self, results: list[Result]) -> None:
         self.results = report.sort_results(results)
@@ -147,20 +156,19 @@ class TuxReadyApp(App):
         filt = FILTERS[self.filter_index][0]
         if self.search_text:
             filt += f" · search: {escape(self.search_text)}"
-        self.query_one("#score", Static).update(
-            f"{bar}[b]{escape(s.headline)}[/b]\n{escape(s.mood)}\n"
-            f"{counts}\n"
-            f"[dim]Showing: {filt}[/dim]"
-        )
+        lines = [f"{bar}[b]{escape(s.headline)}[/b]", escape(s.mood), counts]
+        hardware = report.hardware_line(self.results)
+        if hardware:
+            lines.append(f"[b]{escape(hardware)}[/b] [dim](press f for the Hardware filter)[/dim]")
+        lines += [f"[yellow][b]Note: [/b]{escape(note)}[/]" for note in report.notes(self.results)]
+        lines.append(f"[dim]Showing: {filt}[/dim]")
+        self.query_one("#score", Static).update("\n".join(line for line in lines if line))
 
     def _refresh_table(self) -> None:
         wanted = FILTERS[self.filter_index][1]
         query = self.search_text.lower()
         self.shown = [
-            r
-            for r in self.results
-            if (wanted is None or r.verdict in wanted)
-            and (not query or query in r.item.name.lower())
+            r for r in self.results if wanted(r) and (not query or query in r.item.name.lower())
         ]
         table = self.query_one(DataTable)
         table.clear()
@@ -241,3 +249,16 @@ class TuxReadyApp(App):
         path = Path(self.markdown_path)
         path.write_text(report.markdown(self.results), encoding="utf-8")
         self.notify(f"Saved {path.resolve()}", title="Report saved")
+
+    def action_setup_script(self) -> None:
+        if not self.results:
+            self.notify("Still checking — try again in a moment.")
+            return
+        plan = setupscript.plan(self.results)
+        path = setupscript.write(self.results, self.setup_path)
+        self.notify(
+            f"{len(plan.install)} apps to install. Copy it to your Linux PC and run: "
+            f"bash {path.name}\n{path.resolve()}",
+            title="Setup script saved",
+            timeout=10,
+        )

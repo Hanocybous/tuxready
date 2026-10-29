@@ -7,3 +7,4 @@ dist/
 .pytest_cache/
 .ruff_cache/
 tuxready-report.md
+tuxready-setup.sh

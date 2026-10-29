@@ -9,6 +9,7 @@ from enum import Enum
 class Kind(str, Enum):
     APP = "app"
     GAME = "game"
+    HARDWARE = "hardware"
 
 
 class Verdict(str, Enum):
@@ -92,6 +93,12 @@ class Result:
     alternatives: list[str] = field(default_factory=list)
     links: list[Link] = field(default_factory=list)
     how_to: str | None = None
+    flatpak: str | None = None  # Flathub ID of the item itself, when it runs natively
+    alt_flatpaks: dict[str, str] = field(default_factory=dict)  # alternative name -> Flathub ID
+
+    @property
+    def is_hardware(self) -> bool:
+        return self.item.kind is Kind.HARDWARE
 
     def to_dict(self) -> dict:
         return {
@@ -104,5 +111,6 @@ class Result:
             "summary": self.summary,
             "alternatives": self.alternatives,
             "how_to": self.how_to,
+            "flatpak": self.flatpak,
             "links": [{"title": link.title, "url": link.url} for link in self.links],
         }

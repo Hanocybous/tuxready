@@ -30,6 +30,16 @@ python scripts/verify_flathub_ids.py   # checks every Flathub ID exists
 pytest
 ```
 
+## Add a hardware rule
+
+Hardware rules live in [`src/tuxready/hardware.py`](src/tuxready/hardware.py), matched by PCI/USB
+vendor ID (e.g. `10de` = NVIDIA) and device name. Add a test in `tests/test_hardware.py` with the
+device as Windows or Linux reports it. To see what tuxready detects on your machine:
+
+```bash
+python -c "from tuxready import hardware; print(*hardware.detect(), sep='\n')"
+```
+
 ## Working on the code
 
 ```bash
@@ -48,6 +58,8 @@ Layout:
 | `inventory/steam.py` | Finds Steam libraries and installed games (Windows and Linux) |
 | `sources/` | Steam, ProtonDB, AreWeAntiCheatYet and Flathub lookups, with an on-disk cache |
 | `checker.py` | Turns all of that into one verdict per item |
+| `hardware.py` | Detects GPUs, Wi-Fi, fingerprint readers etc. and applies the hardware rules |
+| `setupscript.py` | Builds the `tuxready-setup.sh` install script |
 | `report.py` | Score, text, Markdown and JSON output |
 | `tui.py` | The interactive view (built with [Textual](https://textual.textualize.io)) |
 

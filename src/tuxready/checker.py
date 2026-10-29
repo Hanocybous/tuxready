@@ -19,14 +19,26 @@ STEAM_PLAY_HOWTO = (
 )
 
 _PROTON_TIERS = {
-    "platinum": (Verdict.WORKS, "Works perfectly through Proton (ProtonDB: Platinum)."),
-    "gold": (Verdict.WORKS, "Works through Proton with minor issues at most (ProtonDB: Gold)."),
-    "silver": (Verdict.TWEAKS, "Runs through Proton, with some issues (ProtonDB: Silver)."),
+    "platinum": (
+        Verdict.WORKS,
+        "Works perfectly through Proton (ProtonDB: Platinum).",
+    ),
+    "gold": (
+        Verdict.WORKS,
+        "Works through Proton with minor issues at most (ProtonDB: Gold).",
+    ),
+    "silver": (
+        Verdict.TWEAKS,
+        "Runs through Proton, with some issues (ProtonDB: Silver).",
+    ),
     "bronze": (
         Verdict.TWEAKS,
         "Runs through Proton, but with noticeable problems (ProtonDB: Bronze).",
     ),
-    "borked": (Verdict.BLOCKED, "Doesn't run on Linux right now (ProtonDB: Borked)."),
+    "borked": (
+        Verdict.BLOCKED,
+        "Doesn't run on Linux right now (ProtonDB: Borked).",
+    ),
 }
 
 Progress = Callable[[int, int, Result], None]
@@ -112,6 +124,7 @@ class Checker:
             f"Available for Linux on Flathub ({hit.get('summary') or app_id}).",
             links=[Link("Flathub", flathub.app_url(app_id))],
             how_to=flathub.install_command(app_id),
+            flatpak=app_id,
         )
 
     def check_game(self, item: Item, ac: dict | None) -> Result:
@@ -170,6 +183,7 @@ class Checker:
             tier = (summary or {}).get("tier")
             if tier in _PROTON_TIERS:
                 verdict, text = _PROTON_TIERS[tier]
+                text = text.replace("(ProtonDB:", "(Steam version, ProtonDB:")
                 trending = (summary or {}).get("trendingTier")
                 if trending and trending != tier and trending in _PROTON_TIERS:
                     text += f" Recent reports are {trending.capitalize()}."
@@ -220,13 +234,24 @@ def from_knowledge(item: Item, entry: dict) -> Result:
         links.append(Link("Flathub", flathub.app_url(entry["flatpak"])))
         how_to = flathub.install_command(entry["flatpak"])
     alternatives = []
+    alt_flatpaks: dict[str, str] = {}
     for alt in entry.get("alternatives", []):
         alternatives.append(alt["name"])
         if alt.get("flatpak"):
+            alt_flatpaks[alt["name"]] = alt["flatpak"]
             links.append(Link(alt["name"], flathub.app_url(alt["flatpak"])))
         elif alt.get("url"):
             links.append(Link(alt["name"], alt["url"]))
-    return Result(item, Verdict(entry["verdict"]), entry["summary"], alternatives, links, how_to)
+    return Result(
+        item,
+        Verdict(entry["verdict"]),
+        entry["summary"],
+        alternatives,
+        links,
+        how_to,
+        flatpak=entry.get("flatpak"),
+        alt_flatpaks=alt_flatpaks,
+    )
 
 
 def unknown(item: Item) -> Result:
