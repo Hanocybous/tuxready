@@ -29,7 +29,8 @@ _NOISE = re.compile(
       | python\ \d.*\ (launcher|core|exe|tcl|pip|doc|test|dev|utility|add\ to\ path)
       | java\ (auto\ updater|update) | steamworks | epic\ online\ services
       | epic\ games\ launcher\ prerequisites
-      | ea\ (app\ )?installer | battleye | easyanticheat | microsoft\ policy\ platform
+      | ea\ (app\ )?installer | battleye | easyanticheat | anti\ ?cheat\ ?expert
+      | microsoft\ policy\ platform
       # Helpers and runtimes that come bundled with other programs:
       | mozilla\ maintenance\ service | google\ update | microsoft\ windows\ application\ compat
       | microsoft\ system\ clr\ types | microsoft\ sql\ server\ \d+\ management\ objects
@@ -64,9 +65,13 @@ def is_user_facing(entry: dict) -> bool:
 def clean_name(name: str) -> str:
     """Drop trailing versions and bitness: 'Notepad++ (64-bit x64)' -> 'Notepad++'."""
     name = re.sub(
-        r"\s*\((x64|x86|64-bit|32-bit|64-bit x64|remove only)\)\s*$", "", name, flags=re.I
+        r"\s*\((x64|x86|64-bit|32-bit|64-bit x64|remove only|user|machine|all users)\)\s*$",
+        "",
+        name,
+        flags=re.I,
     )
-    name = re.sub(r"\s+(version\s+)?v?\d+(\.\d+)+[\w.-]*$", "", name, flags=re.I)
+    name = re.sub(r"\s+-\s+[a-z]{2}-[a-z]{2}$", "", name, flags=re.I)  # "Microsoft 365 - en-us"
+    name = re.sub(r"\s+(version\s+)?v?\d+(\.\d+)+[\w.+-]*$", "", name, flags=re.I)
     return name.strip()
 
 

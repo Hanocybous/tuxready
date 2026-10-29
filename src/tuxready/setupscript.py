@@ -16,8 +16,10 @@ STEAM_ID = "com.valvesoftware.Steam"
 class Plan:
     install: list[tuple[str, str]] = field(default_factory=list)  # (flatpak id, comment)
     optional: list[tuple[str, str]] = field(default_factory=list)  # commented out by default
-    vendor: list[tuple[str, str]] = field(default_factory=list)  # (name, note): not on Flathub
+    packages: list[str] = field(default_factory=list)  # names: install with the package manager
+    vendor: list[tuple[str, str]] = field(default_factory=list)  # (name, note): maker's website
     web: list[tuple[str, str]] = field(default_factory=list)  # (name, note): use in browser
+    instead: list[tuple[str, str]] = field(default_factory=list)  # (name, note): no app to install
     reminders: list[str] = field(default_factory=list)
 
     def ids(self) -> set[str]:
@@ -53,12 +55,19 @@ def plan(results: list[Result]) -> Plan:
             add(first_id, f"{first_name} (instead of {name})")
             for alt_name, app_id in alts[1:]:
                 add(app_id, f"{alt_name} (another option for {name})", optional=True)
-        elif r.verdict is Verdict.NATIVE and r.item.kind is Kind.APP:
-            p.vendor.append((name, r.summary))
-        elif r.verdict in (Verdict.WORKS, Verdict.ALTERNATIVE) and r.item.kind is Kind.APP:
+        elif r.item.kind is Kind.GAME:
+            continue  # games come through Steam (added below)
+        elif r.verdict is Verdict.NATIVE:
+            if "package" in r.summary.lower():
+                p.packages.append(name)
+            else:
+                p.vendor.append((name, r.summary))
+        elif r.verdict is Verdict.WORKS:
             p.web.append((name, r.summary))
             for alt_name, app_id in alts:
                 add(app_id, f"{alt_name} (desktop app for {name})", optional=True)
+        elif r.verdict in (Verdict.ALTERNATIVE, Verdict.TWEAKS):
+            p.instead.append((name, r.summary))
     if has_games and STEAM_ID not in chosen:
         add(STEAM_ID, "Steam (for your games)")
     if has_games:
@@ -115,14 +124,20 @@ def build(results: list[Result], filename: str = "tuxready-setup.sh") -> str:
         '  printf "  %s\\n" "${failed[@]}"',
         "fi",
     ]
-    if p.vendor or p.web or p.reminders:
+    if p.packages or p.vendor or p.web or p.instead or p.reminders:
         lines += ["", "cat <<'NOTES'", "", "Still to do by hand:"]
+        if p.packages:
+            lines += ["", "Install with your package manager (dnf, apt, pacman...):"]
+            lines += [f"  - {', '.join(p.packages)}"]
         if p.vendor:
-            lines += ["", "Install from the maker's website (not on Flathub):"]
+            lines += ["", "Download from the maker's website (not on Flathub):"]
             lines += [f"  - {name}: {note}" for name, note in p.vendor]
         if p.web:
             lines += ["", "Use in your web browser:"]
             lines += [f"  - {name}: {note}" for name, note in p.web]
+        if p.instead:
+            lines += ["", "Nothing to install, but read this:"]
+            lines += [f"  - {name}: {note}" for name, note in p.instead]
         if p.reminders:
             lines += ["", "Reminders:"]
             lines += [f"  - {text}" for text in p.reminders]

@@ -110,3 +110,15 @@ def test_notes_steam_only_and_other_launchers():
 def test_notes_when_only_hardware_found():
     hw = hardware.check([Device("gpu", "AMD Radeon RX 6600", "1002", "73ff")])
     assert any("No apps or games were found" in n for n in report.notes(hw))
+
+
+def test_script_sections():
+    results = check("Git", "Node.js", "1Password", "Microsoft Teams", "CrystalDiskInfo")
+    p = setupscript.plan(results)
+    assert {"Git", "Node.js"} <= set(p.packages)
+    assert [name for name, _ in p.vendor] == ["1Password"]
+    assert [name for name, _ in p.web] == ["Microsoft Teams"]
+    assert [name for name, _ in p.instead] == ["CrystalDiskInfo"]
+    text = setupscript.build(results)
+    assert "Install with your package manager" in text
+    assert "Nothing to install, but read this" in text

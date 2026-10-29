@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-_DROP = re.compile(r"[™®©]")
+_DROP = re.compile(r"[™®©]|\((tm|r|c)\)", re.IGNORECASE)
 _SEPARATORS = re.compile(r"[:\-_/–—.,]")
 _KEEP = re.compile(r"[^a-z0-9+# ]")
 _SPACES = re.compile(r"\s+")
@@ -19,6 +19,11 @@ def normalize(name: str) -> str:
     text = _SEPARATORS.sub(" ", text)
     text = _KEEP.sub("", text)
     return _SPACES.sub(" ", text).strip()
+
+
+def compact(name: str) -> str:
+    """normalize() without spaces, so 'BrownDust2' and 'Brown Dust 2' compare equal."""
+    return normalize(name).replace(" ", "")
 
 
 def starts_with_words(name: str, prefix: str) -> bool:

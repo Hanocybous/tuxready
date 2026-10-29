@@ -5,7 +5,7 @@ from __future__ import annotations
 import urllib.parse
 
 from tuxready.sources.http import DAY, Http
-from tuxready.text import normalize
+from tuxready.text import compact, normalize
 
 PROTONDB_SUMMARY = "https://www.protondb.com/api/v1/reports/summaries/{appid}.json"
 STORE_DETAILS = (
@@ -37,8 +37,10 @@ def search(http: Http, name: str) -> tuple[int, str] | None:
     """Find a Steam game whose name matches `name` exactly (ignoring case and symbols)."""
     url = STORE_SEARCH.format(term=urllib.parse.quote(name))
     data = http.get_json(url, ttl=7 * DAY)
-    wanted = normalize(name)
+    wanted, wanted_compact = normalize(name), compact(name)
     for hit in (data or {}).get("items", []) if isinstance(data, dict) else []:
-        if hit.get("type") == "app" and normalize(hit.get("name", "")) == wanted:
+        hit_name = hit.get("name", "")
+        same = normalize(hit_name) == wanted or compact(hit_name) == wanted_compact
+        if hit.get("type") == "app" and same:
             return int(hit["id"]), hit["name"]
     return None

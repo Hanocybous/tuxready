@@ -243,3 +243,90 @@ def test_developer_pc_has_no_unknowns(monkeypatch):
     results = make_checker({}).check_all(items)
     unknown = [r.item.name for r in results if r.verdict is Verdict.UNKNOWN]
     assert unknown == []
+
+
+# A typical Windows 11 laptop: dev tools, games, laptop-maker utilities and bundled helpers.
+LAPTOP = [
+    "CrystalDiskInfo",
+    "Epic Games Launcher",
+    "HWiNFO® 64",
+    "Microsoft 365 - en-us",
+    "WinRAR",
+    "Xbox Service",
+    "Microsoft OneDrive",
+    "AI Playground",
+    "Bun",
+    "Copilot",
+    "doxygen",
+    "GitHub Copilot",
+    "GlideX Service Installer",
+    "Intel® VTune(TM) Profiler",
+    "Fortnite",
+    "NVIDIA GeForce NOW",
+    "RPG MAKER VX Ace RTP",
+    "Samsung USB Driver for Mobile Phones",
+    "Smart Switch Service",
+    "starship",
+    "StoryCube Service Installer",
+    "zoxide",
+    "7-Zip",
+    "Brave",
+    "CLion",
+    "Discord",
+    "Eclipse Temurin JDK with Hotspot 21.0.12.1+1 (x64)",
+    "Git",
+    "GitHub CLI",
+    "MEGAsync",
+    "Microsoft Edge",
+    "Microsoft Visual Studio Code (User)",
+    "Node.js",
+    "PyCharm",
+    "Steam",
+    "TeamViewer",
+    "WebStorm",
+    "Zoom Workplace",
+]
+
+
+def test_typical_laptop_has_no_unknowns(monkeypatch):
+    from tuxready.inventory import windows
+
+    entries = [{"DisplayName": n} for n in LAPTOP + ["AntiCheatExpert"]]
+    monkeypatch.setattr(windows, "read_registry", lambda: entries)
+    items = windows.scan()
+    names = {i.name for i in items}
+    assert "AntiCheatExpert" not in names
+    assert {
+        "Microsoft Visual Studio Code",
+        "Microsoft 365",
+        "Eclipse Temurin JDK with Hotspot",
+    } <= names
+    checker = make_checker({})
+    checker._anticheat = AntiCheatDB(
+        ANTICHEAT
+        + [
+            {
+                "name": "Nikke: Goddess of Victory",
+                "status": "Running",
+                "anticheats": ["Anti-Cheat Expert"],
+                "storeIds": {},
+            }
+        ]
+    )
+    results = checker.check_all(items)
+    assert [r.item.name for r in results if r.verdict is Verdict.UNKNOWN] == []
+
+
+def test_anticheat_name_matching():
+    db = AntiCheatDB(
+        [
+            {"name": "Nikke: Goddess of Victory", "status": "Running"},
+            {"name": "Brown Dust 2", "status": "Running"},
+            {"name": "Halo Infinite", "status": "Running"},
+            {"name": "Halo: The Master Chief Collection", "status": "Running"},
+        ]
+    )
+    assert db.lookup("NIKKE")["name"] == "Nikke: Goddess of Victory"
+    assert db.lookup("BrownDust2")["name"] == "Brown Dust 2"
+    assert db.lookup("Halo") is None  # two games start with "Halo": don't guess
+    assert db.lookup("Dis") is None  # too short to guess

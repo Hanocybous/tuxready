@@ -31,13 +31,15 @@ FILTERS: list[tuple[str, Callable[[Result], bool]]] = [
 ]
 
 # Plain symbols: emoji widths vary between terminals and break the table columns.
+# (✔ and ✘ turn into colour emoji in Windows Terminal, so use ✓ and ✗.)
+NAME_WIDTH = 34
 SYMBOL = {
-    Verdict.NATIVE: "✔",
-    Verdict.WORKS: "✔",
+    Verdict.NATIVE: "✓",
+    Verdict.WORKS: "✓",
     Verdict.NOT_NEEDED: "–",
     Verdict.TWEAKS: "~",
     Verdict.ALTERNATIVE: "⇄",
-    Verdict.BLOCKED: "✘",
+    Verdict.BLOCKED: "✗",
     Verdict.UNKNOWN: "?",
 }
 
@@ -52,6 +54,10 @@ VERDICT_STYLE = {
 }
 
 
+def _shorten(text: str, width: int) -> str:
+    return text if len(text) <= width else text[: width - 1].rstrip() + "…"
+
+
 class TuxReadyApp(App):
     TITLE = "tuxready"
     SUB_TITLE = "Will your stuff work on Linux?"
@@ -61,8 +67,8 @@ class TuxReadyApp(App):
     #search { margin: 0 1; display: none; }
     #search.visible { display: block; }
     #body { height: 1fr; }
-    #table { width: 3fr; }
-    #details { width: 2fr; padding: 1 2; border-left: tall $primary; }
+    #table { width: auto; max-width: 75%; }
+    #details { width: 1fr; min-width: 30; padding: 1 2; border-left: tall $primary; }
     """
     BINDINGS = [
         Binding("f", "next_filter", "Filter"),
@@ -110,9 +116,9 @@ class TuxReadyApp(App):
     def on_mount(self) -> None:
         table = self.query_one(DataTable)
         table.add_column("", key="icon", width=1)
-        table.add_column("Name", key="name")
+        table.add_column("Name", key="name", width=NAME_WIDTH)
         table.add_column("Type", key="kind", width=8)
-        table.add_column("Verdict", key="verdict")
+        table.add_column("Verdict", key="verdict", width=19)
         table.focus()
         self.run_checks()
 
@@ -176,7 +182,7 @@ class TuxReadyApp(App):
             style = VERDICT_STYLE[r.verdict]
             table.add_row(
                 Text(SYMBOL[r.verdict], style=style),
-                Text(r.item.name),
+                Text(_shorten(r.item.name, NAME_WIDTH)),
                 r.item.kind.value if r.item.kind else "",
                 Text(r.verdict.label, style=style),
                 key=str(index),
