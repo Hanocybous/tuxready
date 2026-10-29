@@ -1,5 +1,3 @@
-"""Tiny JSON-over-HTTP client with an on-disk cache, so repeat runs are fast and work offline."""
-
 from __future__ import annotations
 
 import hashlib
@@ -48,7 +46,6 @@ class Http:
         return self._fetch("POST", url, body, ttl)
 
     def _fetch(self, method: str, url: str, body: dict | None, ttl: float):
-        """Return parsed JSON, or None if the resource is missing or unreachable."""
         payload = json.dumps(body, sort_keys=True).encode() if body is not None else None
         path = self._cache_path(method, url, payload)
         cached, age = self._read_cache(path)
@@ -80,7 +77,7 @@ class Http:
                 time.sleep(1.0)
         with self._lock:
             self.failures += 1
-        # Network trouble: a stale answer beats no answer.
+        # offline: fall back to the old cached copy
         return None if cached is _MISSING else cached
 
     def _cache_path(self, method: str, url: str, payload: bytes | None) -> Path:

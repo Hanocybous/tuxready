@@ -1,5 +1,3 @@
-"""List programs installed on Windows (reads the same registry keys as 'Apps & features')."""
-
 from __future__ import annotations
 
 import re
@@ -48,7 +46,6 @@ _NOISE = re.compile(
 
 
 def is_user_facing(entry: dict) -> bool:
-    """Decide whether an uninstall registry entry is a real, user-chosen program."""
     name = (entry.get("DisplayName") or "").strip()
     if not name:
         return False
@@ -64,7 +61,7 @@ def is_user_facing(entry: dict) -> bool:
 
 
 def clean_name(name: str) -> str:
-    """Drop trailing versions and bitness: 'Notepad++ (64-bit x64)' -> 'Notepad++'."""
+    # 'Notepad++ (64-bit x64)' -> 'Notepad++', 'Discord 1.0.9' -> 'Discord'
     name = strip_marks(name)
     name = re.sub(
         r"\s*\((x64|x86|64-bit|32-bit|64-bit x64|remove only|user|machine|all users)\)\s*$",
@@ -78,7 +75,6 @@ def clean_name(name: str) -> str:
 
 
 def read_registry() -> list[dict]:
-    """Raw uninstall entries from the registry. Empty when not on Windows."""
     if sys.platform != "win32":
         return []
     import winreg
@@ -119,7 +115,6 @@ def read_registry() -> list[dict]:
 
 
 def scan() -> list[Item]:
-    """User-facing installed programs, without duplicates. Empty when not on Windows."""
     seen: dict[str, Item] = {}
     for entry in read_registry():
         if not is_user_facing(entry):

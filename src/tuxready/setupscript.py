@@ -1,5 +1,3 @@
-"""Write a shell script that installs the Linux versions of everything, in one go."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field

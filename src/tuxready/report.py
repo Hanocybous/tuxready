@@ -1,5 +1,3 @@
-"""Readiness score, notes, and the plain-text, Markdown and JSON reports."""
-
 from __future__ import annotations
 
 import json
@@ -57,12 +55,10 @@ class Score:
 
 
 def split(results: list[Result]) -> tuple[list[Result], list[Result]]:
-    """(apps and games, hardware)."""
     return [r for r in results if not r.is_hardware], [r for r in results if r.is_hardware]
 
 
 def score(results: list[Result]) -> Score:
-    """Score for apps and games. Hardware is reported separately and not scored."""
     software, _ = split(results)
     counts = Counter(r.verdict for r in software)
     rated = [r for r in software if r.verdict.weight is not None]
@@ -83,7 +79,6 @@ def hardware_line(results: list[Result]) -> str:
 
 
 def notes(results: list[Result]) -> list[str]:
-    """Things the user should know about how far the results reach."""
     out: list[str] = []
     software, _ = split(results)
     has_games = any(r.item.kind is Kind.GAME for r in software)
@@ -120,7 +115,6 @@ def notes(results: list[Result]) -> list[str]:
 
 
 def sort_results(results: list[Result]) -> list[Result]:
-    """Problems first, so the things that need attention are at the top. Hardware last."""
     priority = {
         Verdict.BLOCKED: 0,
         Verdict.ALTERNATIVE: 1,
@@ -139,7 +133,7 @@ def counts_line(s: Score) -> str:
 
 def _plain_entry(r: Result, show_kind: bool = True, icon: str = "•") -> list[str]:
     kind = f" [{r.item.kind.value}]" if show_kind and r.item.kind else ""
-    lines = [f"  {icon} {r.item.name}{kind} — {r.summary}"]
+    lines = [f"  {icon} {r.item.name}{kind}: {r.summary}"]
     if r.alternatives:
         lines.append(f"      Try: {', '.join(r.alternatives)}")
     if r.how_to:

@@ -1,5 +1,3 @@
-"""Steam store lookups and ProtonDB ratings."""
-
 from __future__ import annotations
 
 import urllib.parse
@@ -15,7 +13,6 @@ STORE_SEARCH = "https://store.steampowered.com/api/storesearch/?term={term}&cc=u
 
 
 def protondb(http: Http, appid: int) -> dict | None:
-    """ProtonDB summary, e.g. {'tier': 'gold', 'total': 2107, ...}."""
     data = http.get_json(PROTONDB_SUMMARY.format(appid=appid))
     return data if isinstance(data, dict) else None
 
@@ -25,7 +22,6 @@ def protondb_url(appid: int) -> str:
 
 
 def details(http: Http, appid: int) -> dict | None:
-    """Store details: name, type and platforms ({'windows': True, 'linux': False, ...})."""
     data = http.get_json(STORE_DETAILS.format(appid=appid), ttl=7 * DAY)
     entry = (data or {}).get(str(appid)) if isinstance(data, dict) else None
     if not entry or not entry.get("success"):
@@ -34,7 +30,7 @@ def details(http: Http, appid: int) -> dict | None:
 
 
 def search(http: Http, name: str) -> tuple[int, str] | None:
-    """Find a Steam game whose name matches `name` exactly (ignoring case and symbols)."""
+    # exact name match only, otherwise we'd pick up DLCs and soundtracks
     url = STORE_SEARCH.format(term=urllib.parse.quote(name))
     data = http.get_json(url, ttl=7 * DAY)
     wanted, wanted_compact = normalize(name), compact(name)

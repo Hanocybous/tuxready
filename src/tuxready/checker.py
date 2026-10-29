@@ -1,5 +1,3 @@
-"""Decide how well each item will work on Linux."""
-
 from __future__ import annotations
 
 import dataclasses
@@ -86,7 +84,7 @@ class Checker:
             return Result(item, Verdict.UNKNOWN, f"Couldn't check this one ({error}).")
 
     def check(self, item: Item) -> Result:
-        # 1. Our own knowledge base: best answers, with alternatives.
+        # knowledge base first, it has the alternatives
         if item.steam_appid is None:
             entry = knowledge.match(item.name)
             if entry is not None and (
@@ -97,12 +95,11 @@ class Checker:
         if item.kind is Kind.APP:
             return self.check_app(item) or unknown(item)
 
-        # 2. Games: anti-cheat database, then Steam.
         ac = self.anticheat.lookup(item.name, item.steam_appid)
         if item.steam_appid is not None or ac is not None or item.kind is Kind.GAME:
             return self.check_game(item, ac)
 
-        # 3. Not sure what it is: a Linux app on Flathub? A game on Steam?
+        # unknown type: try Flathub, then Steam
         app = self.check_app(item)
         if app is not None:
             return app
@@ -155,7 +152,7 @@ class Checker:
         if ac is not None:
             links.append(Link("AreWeAntiCheatYet", anticheat.page_url(ac)))
 
-        # Anti-cheat that blocks Linux beats everything else.
+        # blocked anti-cheat wins even if ProtonDB says gold
         if ac is not None and ac.get("status") in anticheat.BLOCKING:
             systems = ", ".join(ac.get("anticheats") or []) or "its anti-cheat"
             if ac.get("status") == "Denied":

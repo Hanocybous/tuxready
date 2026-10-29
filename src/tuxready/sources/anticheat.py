@@ -1,5 +1,3 @@
-"""Anti-cheat status from the community-run AreWeAntiCheatYet project."""
-
 from __future__ import annotations
 
 from tuxready.sources.http import Http

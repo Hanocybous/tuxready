@@ -1,5 +1,3 @@
-"""Core data types shared across the app."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -13,8 +11,6 @@ class Kind(str, Enum):
 
 
 class Verdict(str, Enum):
-    """How well something will work on Linux, best first."""
-
     NATIVE = "native"
     WORKS = "works"
     NOT_NEEDED = "not_needed"
@@ -33,7 +29,6 @@ class Verdict(str, Enum):
 
     @property
     def weight(self) -> float | None:
-        """Contribution to the readiness score. None means 'left out of the score'."""
         return VERDICT_WEIGHTS[self]
 
 
@@ -70,8 +65,6 @@ VERDICT_WEIGHTS: dict[Verdict, float | None] = {
 
 @dataclass(frozen=True)
 class Item:
-    """Something the user has installed or wants to check."""
-
     name: str
     kind: Kind | None  # None = not known yet; the checker works it out
     source: str  # "windows", "steam", "list"

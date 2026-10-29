@@ -1,5 +1,3 @@
-"""Interactive terminal UI (built with Textual)."""
-
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -36,7 +34,7 @@ NAME_WIDTH = 34
 SYMBOL = {
     Verdict.NATIVE: "✓",
     Verdict.WORKS: "✓",
-    Verdict.NOT_NEEDED: "–",
+    Verdict.NOT_NEEDED: "-",
     Verdict.TWEAKS: "~",
     Verdict.ALTERNATIVE: "⇄",
     Verdict.BLOCKED: "✗",
@@ -55,7 +53,7 @@ VERDICT_STYLE = {
 
 
 def _shorten(text: str, width: int) -> str:
-    return text if len(text) <= width else text[: width - 1].rstrip() + "…"
+    return text if len(text) <= width else text[: width - 3].rstrip() + "..."
 
 
 class TuxReadyApp(App):
@@ -104,7 +102,7 @@ class TuxReadyApp(App):
         yield Header()
         yield Static(self._intro(), id="score")
         yield ProgressBar(total=len(self.items), id="progress", show_eta=False)
-        search = Input(placeholder="Search by name…  (Esc to clear)", id="search")
+        search = Input(placeholder="Search by name (Esc to clear)", id="search")
         search.can_focus = False  # until "/" opens it, so letter keys reach the shortcuts
         yield search
         with Horizontal(id="body"):
@@ -124,7 +122,7 @@ class TuxReadyApp(App):
 
     def _intro(self) -> str:
         found = " · ".join(self.notes) if self.notes else f"Checking {len(self.items)} items"
-        return f"[b]Checking…[/b]\n{escape(found)}"
+        return f"[b]Checking...[/b]\n{escape(found)}"
 
     @work(thread=True, exclusive=True)
     def run_checks(self) -> None:
@@ -250,7 +248,7 @@ class TuxReadyApp(App):
 
     def action_export(self) -> None:
         if not self.results:
-            self.notify("Still checking — try again in a moment.")
+            self.notify("Still checking, try again in a moment.")
             return
         path = Path(self.markdown_path)
         path.write_text(report.markdown(self.results), encoding="utf-8")
@@ -258,7 +256,7 @@ class TuxReadyApp(App):
 
     def action_setup_script(self) -> None:
         if not self.results:
-            self.notify("Still checking — try again in a moment.")
+            self.notify("Still checking, try again in a moment.")
             return
         plan = setupscript.plan(self.results)
         path = setupscript.write(self.results, self.setup_path)

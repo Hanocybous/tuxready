@@ -1,105 +1,38 @@
-# tuxready 🐧
+# tuxready
 
 [![CI](https://github.com/Hanocybous/tuxready/actions/workflows/ci.yml/badge.svg)](https://github.com/Hanocybous/tuxready/actions/workflows/ci.yml)
-![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)
-![Linux](https://img.shields.io/badge/Linux-x64-FCC624?logo=linux&logoColor=black)
-![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**Will your apps and games work on Linux? Find out before you switch.**
-
-tuxready scans your Windows PC (installed programs and your Steam library) and tells you,
-one by one, what will work on Linux, what won't, and what to use instead.
+Thinking about moving from Windows to Linux? tuxready scans your PC and tells you which of
+your apps, games and hardware will work, which won't, and what to use instead.
 
 ![tuxready screenshot](docs/screenshot.png)
 
-| You have | tuxready tells you |
-|---|---|
-| Discord, Spotify, Chrome | ✅ Runs natively, with the install command |
-| Elden Ring, Cyberpunk 2077 | ✅ Works through Proton (ProtonDB rating) |
-| Valorant, Fortnite, Apex Legends | ❌ Blocked by anti-cheat |
-| Photoshop, Microsoft Office | 🔁 Use an alternative: Krita / Photopea, LibreOffice / Office on the web |
-| Norton, CCleaner, driver updaters | 💤 Not needed on Linux |
+What it checks:
 
-It also checks your **hardware** for the usual trouble spots before you switch: NVIDIA
-graphics (needs a driver), Broadcom Wi-Fi (may not work on first boot), fingerprint readers,
-Windows Hello cameras, Intel RST/RAID disk mode, Surface and Mac models.
+- **Installed programs**: runs natively, works in the browser, or needs an alternative
+  (e.g. Photoshop -> Krita or Photopea, Office -> LibreOffice)
+- **Steam games**: ProtonDB rating, native Linux version, and whether the anti-cheat
+  allows Linux (Valorant and Fortnite don't)
+- **Hardware**: NVIDIA (needs the driver), Broadcom Wi-Fi, fingerprint readers, Windows Hello
+  cameras, Intel RST/RAID disk mode, Surface and Mac models
 
-At the end you get a **readiness score**, a report you can share, and a **setup script**:
-copy it to your new Linux install and run it to install all your apps in one go.
+You get a readiness score, a report you can save, and a setup script that installs your apps
+on the new Linux system.
 
-## Quick start
+## Install
 
-### On Windows (before switching)
+**Windows:** download `tuxready-windows-x64.exe` from the
+[latest release](https://github.com/Hanocybous/tuxready/releases/latest) and double-click it.
+SmartScreen will warn you because the exe isn't signed; click *More info* and *Run anyway*.
 
-1. Download `tuxready-windows-x64.exe` from the [latest release](https://github.com/Hanocybous/tuxready/releases/latest).
-2. Double-click it. That's it: it scans your PC and shows the results.
-
-> Windows SmartScreen may warn about an "unrecognized app" because the file isn't code-signed.
-> Click **More info → Run anyway**. You can check the file against `SHA256SUMS.txt` on the release page.
-
-### On Linux (already switched, or checking from a live USB)
+**Linux:** download `tuxready-linux-x64` from the same page, or:
 
 ```bash
-pipx install git+https://github.com/Hanocybous/tuxready   # or download tuxready-linux-x64 from Releases
-tuxready "Elden Ring" Photoshop Discord
+pipx install git+https://github.com/Hanocybous/tuxready
 ```
 
-Or point it at the Steam library on your Windows drive:
-
-```bash
-tuxready --steam-dir "/run/media/$USER/Windows/Program Files (x86)/Steam"
-```
-
-## Supported systems
-
-| | Windows 10 / 11 | Linux | macOS |
-|---|:-:|:-:|:-:|
-| Ready-made download | ✅ `tuxready-windows-x64.exe` | ✅ `tuxready-linux-x64` | — |
-| Install with pipx (Python 3.10+) | ✅ | ✅ | ⚠️ untested |
-| Scan installed programs | ✅ | — (you've already switched) | — |
-| Scan Steam library | ✅ | ✅ native, Flatpak and Snap Steam | — |
-| Hardware check | ✅ | ✅ | — |
-| Check apps and games by name | ✅ | ✅ | ⚠️ untested |
-| Setup script | ✅ writes it, run it on Linux | ✅ | — |
-
-- The downloads are for **64-bit x86** PCs. On ARM (e.g. Snapdragon laptops, Raspberry Pi),
-  install with pipx instead.
-- The Linux download needs **glibc 2.35 or newer**: Ubuntu 22.04+, Linux Mint 21+, Fedora 36+,
-  Debian 12+, Arch, and anything newer. On older systems, use pipx.
-- The interactive view works best in **Windows Terminal** (built into Windows 11) and any Linux
-  terminal. If it looks wrong in an older console, use `--plain` for a text report.
-
-### How it's built and tested
-
-Every push runs the tests on **Ubuntu** and **Windows** with **Python 3.10 and 3.13**
-([CI](.github/workflows/ci.yml)). On Windows, the test also scans the test machine's real
-registry and hardware, so the Windows code runs for real.
-
-Each release is built by GitHub Actions ([release workflow](.github/workflows/release.yml)),
-not on someone's PC:
-
-| Download | Built on | With |
-|---|---|---|
-| `tuxready-windows-x64.exe` | Windows Server (latest) | Python 3.13 + PyInstaller, one file |
-| `tuxready-linux-x64` | Ubuntu 22.04 | Python 3.13 + PyInstaller, one file |
-| `tuxready-*.whl` / `.tar.gz` | Ubuntu (latest) | Python package for pipx/pip |
-
-Each binary is smoke-tested before upload, and `SHA256SUMS.txt` on the release page lets you
-check that your download wasn't tampered with:
-
-```bash
-sha256sum -c SHA256SUMS.txt --ignore-missing            # Linux
-Get-FileHash .\tuxready-windows-x64.exe -Algorithm SHA256  # Windows (PowerShell)
-```
-
-To build a binary yourself:
-
-```bash
-pip install . pyinstaller
-pyinstaller --onefile --name tuxready --collect-data tuxready --collect-data textual \
-  --collect-submodules rich._unicode_data packaging/entry.py   # -> dist/tuxready
-```
+The downloads are for 64-bit x86. The Linux binary needs glibc 2.35+ (Ubuntu 22.04, Mint 21,
+Fedora 36, Debian 12 or newer); on anything else, use pipx (Python 3.10+). macOS isn't tested.
 
 ## Usage
 
@@ -107,87 +40,71 @@ pyinstaller --onefile --name tuxready --collect-data tuxready --collect-data tex
 tuxready                          scan this PC (installed programs + Steam library)
 tuxready "Elden Ring" Photoshop   check specific apps or games
 tuxready --list my-apps.txt       check a list, one name per line
-tuxready --markdown report.md     also save a shareable Markdown report
-tuxready --setup-script setup.sh  also write a script that installs your Linux apps
-tuxready --hardware Discord       check hardware too when giving names (--no-hardware to skip)
-tuxready --plain                  print a text report instead of the interactive view
-tuxready --json                   machine-readable output
-tuxready --offline                use cached data only
+tuxready --markdown report.md     save a report
+tuxready --setup-script setup.sh  write the install script
+tuxready --plain                  text output instead of the interactive view
+tuxready --json                   JSON output
 ```
 
-In the interactive view: **↑/↓** browse, **f** filter (problems only, won't work, …),
-**/** search, **e** save report, **i** write the setup script, **q** quit.
+Run `tuxready --help` for the rest (`--steam-dir`, `--hardware`, `--offline`, ...).
 
-### The setup script
+Keys in the interactive view: `f` filter, `/` search, `e` save report, `i` setup script,
+`q` quit.
 
-Press **i** (or use `--setup-script`) to get `tuxready-setup.sh`. It installs, from Flathub:
+A list file is just names, one per line. Use `game:` or `app:` if a name is ambiguous, or
+`steam: <id>` for a Steam game (see [examples/my-apps.txt](examples/my-apps.txt)).
 
-- the Linux version of every app you use that has one (Discord, Spotify, OBS…)
-- the top alternative for apps that don't (Krita for Photoshop, LibreOffice for Office…)
-- Steam, if you have games
-
-Other good alternatives are listed in the script too, commented out, so you can switch them
-on. Apps that come from the maker's website, web-only apps and hardware reminders (like
-installing the NVIDIA driver) are printed at the end. Open the file and read it before running:
+To scan a Windows Steam library from Linux:
 
 ```bash
-bash tuxready-setup.sh
+tuxready --steam-dir "/run/media/$USER/Windows/Program Files (x86)/Steam"
 ```
 
-A list file looks like [`examples/my-apps.txt`](examples/my-apps.txt):
+### Setup script
 
+`tuxready-setup.sh` installs from Flathub the Linux version of each app you have, the first
+alternative for apps that don't have one, and Steam if you have games. Other alternatives are
+in the file but commented out. Things it can't install (package manager tools, downloads from
+the maker's site, web apps, driver notes) are printed at the end. Read it before you run it.
+
+## How it works
+
+- Apps are matched against [apps.json](src/tuxready/data/apps.json), a hand-written list of
+  common Windows programs and their Linux alternatives. Anything not in there is looked up on
+  [Flathub](https://flathub.org).
+- Games are looked up on the Steam store and [ProtonDB](https://www.protondb.com), and checked
+  against [AreWeAntiCheatYet](https://areweanticheatyet.com). If the anti-cheat blocks Linux,
+  that wins over a good ProtonDB rating.
+- Hardware rules are in [hardware.py](src/tuxready/hardware.py) and work offline.
+
+Score: native / works / not needed count 1, tweaks 0.7, alternative 0.5, won't work 0.
+Unknowns and hardware aren't counted.
+
+Lookups are cached for a day in `~/.cache/tuxready` (`%LOCALAPPDATA%\tuxready\cache` on
+Windows). Only app and game names are sent to those APIs; nothing else leaves your PC.
+
+**Limitations:** only the Steam library is scanned for games, so Epic, GOG, EA and Ubisoft
+games need to be checked by name. Game ratings are for the Steam version.
+
+## Building
+
+Tests run on Ubuntu and Windows with Python 3.10 and 3.13 on every push. Release binaries are
+built by GitHub Actions with PyInstaller (Windows on `windows-latest`, Linux on Ubuntu 22.04),
+and each release has a `SHA256SUMS.txt`.
+
+```bash
+pip install -e . pytest && pytest
+pip install pyinstaller
+pyinstaller --onefile --name tuxready --collect-data tuxready --collect-data textual \
+  --collect-submodules rich._unicode_data packaging/entry.py
 ```
-Discord
-Adobe Photoshop
-game: Elden Ring
-steam: 1172470
-```
-
-## How it decides
-
-| Source | Used for |
-|---|---|
-| Built-in knowledge base ([`apps.json`](src/tuxready/data/apps.json)) | ~150 common Windows programs: verdict and best Linux alternatives |
-| [AreWeAntiCheatYet](https://areweanticheatyet.com) | Whether a game's anti-cheat allows Linux |
-| [ProtonDB](https://www.protondb.com) | How well a Windows game runs through Proton |
-| Steam store | Native Linux versions, and matching game names to Steam IDs |
-| [Flathub](https://flathub.org) | Whether an app is available for Linux |
-
-Anti-cheat that blocks Linux overrides everything else, because a game with a Gold rating is
-still unplayable online if the anti-cheat kicks you.
-
-Hardware rules are built in ([`hardware.py`](src/tuxready/hardware.py)) and work offline. On
-Windows they read the device list through PowerShell; on Linux, from `/sys`.
-
-### Limitations
-
-- **Games are checked against Steam.** Ratings are for the Steam version of each game, and only
-  your Steam library is scanned. Games from Epic, GOG, EA or Ubisoft aren't detected yet, but
-  you can check them by name (`tuxready "Game name"`). tuxready tells you when it spots one of
-  those launchers.
-- Fingerprint readers can't be judged automatically; tuxready shows the USB ID to look up.
-
-**The score** counts each app and game (hardware is shown separately): ✅ native/works/not needed = 1, 🔧 tweaks = 0.7,
-🔁 alternative = 0.5, ❌ won't work = 0. Unknown items are left out.
-
-Results are cached for a day (`~/.cache/tuxready` or `%LOCALAPPDATA%\tuxready\cache`), so a second run is instant.
-
-## Privacy
-
-tuxready doesn't upload your program list anywhere. It only sends individual app or game
-**names** to the public Steam, ProtonDB and Flathub APIs to look them up. There's no telemetry
-and no account.
 
 ## Contributing
 
-The most useful contribution is **improving the knowledge base**: adding a program people
-commonly use, or fixing a verdict that's out of date. It's a single JSON file, so no Python
-is needed. See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-Wrong result? [Open an issue](https://github.com/Hanocybous/tuxready/issues) with the name
-exactly as tuxready shows it.
+The easiest way to help is adding or fixing entries in `apps.json`, no Python needed. See
+[CONTRIBUTING.md](CONTRIBUTING.md). If tuxready gets something wrong,
+[open an issue](https://github.com/Hanocybous/tuxready/issues).
 
 ## License
 
-MIT. Game data comes from ProtonDB and AreWeAntiCheatYet, which are community projects; please
-support them.
+MIT. Game data comes from ProtonDB and AreWeAntiCheatYet, both community projects.

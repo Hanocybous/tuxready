@@ -1,5 +1,3 @@
-"""Name matching helpers."""
-
 from __future__ import annotations
 
 import re
@@ -12,8 +10,9 @@ _SPACES = re.compile(r"\s+")
 
 
 def normalize(name: str) -> str:
-    """Lower-case, strip accents, symbols and punctuation: 'ELDEN RING™' -> 'elden ring'."""
-    text = unicodedata.normalize("NFKD", _DROP.sub("", name))  # drop ™ before NFKD makes it "TM"
+    # 'ELDEN RING™' -> 'elden ring'
+    # strip ™ first, NFKD would turn it into "TM"
+    text = unicodedata.normalize("NFKD", _DROP.sub("", name))
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     text = text.lower().replace("&", " and ").replace("'", "")
     text = _SEPARATORS.sub(" ", text)
@@ -22,15 +21,13 @@ def normalize(name: str) -> str:
 
 
 def strip_marks(name: str) -> str:
-    """Remove ™ ® © (TM) (R) from a display name: 'Intel(R) Arc(TM) 140V' -> 'Intel Arc 140V'."""
+    # for display: 'Intel(R) Arc(TM) 140V' -> 'Intel Arc 140V'
     return _SPACES.sub(" ", _DROP.sub("", name)).strip()
 
 
 def compact(name: str) -> str:
-    """normalize() without spaces, so 'BrownDust2' and 'Brown Dust 2' compare equal."""
     return normalize(name).replace(" ", "")
 
 
 def starts_with_words(name: str, prefix: str) -> bool:
-    """True when normalized `name` equals `prefix` or begins with it as whole words."""
     return name == prefix or name.startswith(prefix + " ")

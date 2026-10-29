@@ -1,5 +1,3 @@
-"""Find games in local Steam libraries (works on Windows and Linux)."""
-
 from __future__ import annotations
 
 import os
@@ -56,7 +54,6 @@ def parse_vdf(text: str) -> dict:
 
 
 def default_steam_roots() -> list[Path]:
-    """Places Steam is usually installed on this OS."""
     home = Path.home()
     candidates: list[Path] = []
     if sys.platform == "win32":
@@ -94,7 +91,6 @@ def _windows_registry_steam_paths() -> list[Path]:
 
 
 def library_dirs(steam_root: Path) -> list[Path]:
-    """All 'steamapps' folders for one Steam install, including extra drives."""
     steamapps = _steamapps(steam_root)
     if steamapps is None:
         return []
@@ -134,7 +130,6 @@ def read_manifest(path: Path) -> Item | None:
 
 
 def scan(extra_roots: Iterable[Path] = (), use_defaults: bool = True) -> list[Item]:
-    """Return every installed Steam game found, without duplicates."""
     roots = list(extra_roots) + (default_steam_roots() if use_defaults else [])
     seen_dirs: set[Path] = set()
     games: dict[int, Item] = {}

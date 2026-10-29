@@ -1,5 +1,3 @@
-"""Command-line entry point."""
-
 from __future__ import annotations
 
 import argparse
@@ -73,7 +71,6 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def gather(args: argparse.Namespace) -> tuple[list[Item], list[str], list[Result]]:
-    """Collect everything to check, notes about where it came from, and hardware results."""
     items: list[Item] = []
     notes: list[str] = []
     if args.names:
@@ -112,7 +109,7 @@ def _dedupe(items: list[Item]) -> list[Item]:
 
 
 def _utf8_output() -> None:
-    """Windows uses a legacy code page for redirected output, which can't print ✅."""
+    # on Windows, redirected output uses an old code page that can't print emoji
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure") and (stream.encoding or "").lower() != "utf-8":
             try:
@@ -157,7 +154,7 @@ def main(argv: list[str] | None = None) -> int:
 
     def progress(done: int, total: int, _result) -> None:
         if sys.stderr.isatty():
-            print(f"\rChecking {done}/{total}…", end="", file=sys.stderr, flush=True)
+            print(f"\rChecking {done}/{total}...", end="", file=sys.stderr, flush=True)
 
     for note in notes:
         print(note, file=sys.stderr)

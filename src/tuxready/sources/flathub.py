@@ -1,5 +1,3 @@
-"""Flathub: the main app store for Linux desktop apps."""
-
 from __future__ import annotations
 
 from tuxready.sources.http import DAY, Http
@@ -18,10 +16,7 @@ def install_command(app_id: str) -> str:
 
 
 def find_exact(http: Http, name: str) -> dict | None:
-    """A Flathub app with the same name as `name`, or None.
-
-    Only exact name matches count, so 'Discord' finds Discord and not a Discord look-alike.
-    """
+    # exact names only, so "Discord" doesn't match a Discord client clone
     data = http.post_json(SEARCH, {"query": name}, ttl=7 * DAY)
     hits = (data or {}).get("hits", []) if isinstance(data, dict) else []
     wanted = normalize(name)

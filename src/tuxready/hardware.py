@@ -1,9 +1,4 @@
-"""Hardware check: spot the parts that are known to need attention on Linux.
-
-Reads the device list on Windows (PowerShell/WMI) or Linux (/sys), then applies simple rules:
-NVIDIA graphics, Broadcom Wi-Fi, fingerprint readers, Windows Hello cameras, Intel RST/RAID
-disk mode, Surface and Mac models. No network access needed.
-"""
+"""Hardware check. Device list comes from WMI on Windows and /sys on Linux."""
 
 from __future__ import annotations
 
@@ -49,11 +44,7 @@ class Device:
     device_id: str = ""
 
 
-# --------------------------------------------------------------------------- detection
-
-
 def detect() -> list[Device]:
-    """Devices worth checking on this machine. Never raises."""
     try:
         if sys.platform == "win32":
             return parse_windows(_run_powershell())
@@ -88,7 +79,6 @@ def _run_powershell() -> str:
 
 
 def parse_windows(text: str) -> list[Device]:
-    """Turn the PowerShell/WMI JSON into devices."""
     text = text.strip().lstrip("﻿")
     if not text:
         return []
@@ -195,9 +185,6 @@ def _dedupe(devices: list[Device]) -> list[Device]:
             seen.add(key)
             unique.append(device)
     return unique
-
-
-# --------------------------------------------------------------------------- rules
 
 
 def check(devices: list[Device]) -> list[Result]:

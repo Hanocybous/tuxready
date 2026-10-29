@@ -1,5 +1,3 @@
-"""Hand-written knowledge about common Windows apps (src/tuxready/data/apps.json)."""
-
 from __future__ import annotations
 
 import json
@@ -19,11 +17,7 @@ def entries() -> list[dict]:
 
 
 def match(name: str) -> dict | None:
-    """Best knowledge-base entry for a program name, or None.
-
-    'Adobe Photoshop 2025' matches the alias 'adobe photoshop'. When several aliases fit,
-    the longest wins, so 'Epic Games Launcher' beats a shorter 'epic' alias.
-    """
+    # "Adobe Photoshop 2025" matches the alias "adobe photoshop"; longest alias wins
     wanted = normalize(name)
     best: tuple[int, dict] | None = None
     for entry in entries():
