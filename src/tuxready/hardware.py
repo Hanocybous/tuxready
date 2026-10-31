@@ -172,7 +172,13 @@ def parse_lspci(text: str) -> dict[str, str]:
         vendor = strip_id(parts[2])
         vendor = re.sub(r",?\s+(Corporation|Corp\.?|Inc\.?|Co\.,? Ltd\.?)$", "", vendor)
         vendor = vendor.replace("Advanced Micro Devices, Inc. [AMD/ATI]", "AMD")
-        names[parts[0]] = f"{vendor} {strip_id(parts[3])}".strip()
+        model = strip_id(parts[3])
+        if re.search(r"\[03(00|02|80)\]$", parts[1]):  # display controllers
+            model = re.sub(r"^.*\[(.+)\]$", r"\1", model)  # "AD104 [GeForce RTX 4070]"
+            model = re.sub(
+                r"^.*\bProcessors?\s+", "", model
+            )  # "Core Ultra 200V Series Processors Arc..."
+        names[parts[0]] = (model if model.startswith(vendor) else f"{vendor} {model}").strip()
     return names
 
 
@@ -199,7 +205,7 @@ def check(devices: list[Device]) -> list[Result]:
 
 
 def _result(device: Device, verdict: Verdict, summary: str, **extra) -> Result:
-    item = Item(name=strip_marks(device.name), kind=Kind.HARDWARE, source="hardware")
+    item = Item(name=strip_marks(device.name), kind=Kind.HARDWARE, source=device.category)
     return Result(item, verdict, summary, **extra)
 
 

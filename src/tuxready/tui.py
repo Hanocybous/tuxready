@@ -52,6 +52,15 @@ VERDICT_STYLE = {
 }
 
 
+TYPE_LABELS = {"gpu": "GPU", "wifi": "Wi-Fi", "ir_camera": "IR camera"}
+
+
+def _type(r: Result) -> str:
+    if r.is_hardware:
+        return TYPE_LABELS.get(r.item.source, r.item.source)
+    return r.item.kind.value if r.item.kind else ""
+
+
 def _shorten(text: str, width: int) -> str:
     return text if len(text) <= width else text[: width - 3].rstrip() + "..."
 
@@ -115,7 +124,7 @@ class TuxReadyApp(App):
         table = self.query_one(DataTable)
         table.add_column("", key="icon", width=1)
         table.add_column("Name", key="name", width=NAME_WIDTH)
-        table.add_column("Type", key="kind", width=8)
+        table.add_column("Type", key="kind", width=11)
         table.add_column("Verdict", key="verdict", width=19)
         table.focus()
         self.run_checks()
@@ -181,7 +190,7 @@ class TuxReadyApp(App):
             table.add_row(
                 Text(SYMBOL[r.verdict], style=style),
                 Text(_shorten(r.item.name, NAME_WIDTH)),
-                r.item.kind.value if r.item.kind else "",
+                _type(r),
                 Text(r.verdict.label, style=style),
                 key=str(index),
             )

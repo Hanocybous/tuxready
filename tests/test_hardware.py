@@ -169,7 +169,21 @@ def test_detect_linux_from_fake_sysfs(tmp_path):
     lspci = (
         '00:02.0 "VGA compatible controller [0300]" "Intel Corporation [8086]" '
         '"Arc Graphics 130V [64a0]"\n'
+        '00:02.1 "VGA compatible controller [0300]" "Intel Corporation [8086]" '
+        '"Core Ultra 200V Series Processors Arc Graphics 130V/140V GPU [64a0]"\n'
+        '01:00.0 "VGA compatible controller [0300]" "NVIDIA Corporation [10de]" '
+        '"AD104 [GeForce RTX 4070] [2786]"\n'
+        '02:00.0 "Network controller [0280]" "Intel Corporation [8086]" '
+        '"Wi-Fi 6E(802.11ax) AX210/AX1675* 2x2 [Typhoon Peak] [2725]"\n'
+        '03:00.0 "VGA compatible controller [0300]" "Intel Corporation [8086]" '
+        '"Meteor Lake-P [Intel Arc Graphics] [7d55]"\n'
     )
+    names = hardware.parse_lspci(lspci)
+    assert names["00:02.1"] == "Intel Arc Graphics 130V/140V GPU"
+    assert names["01:00.0"] == "NVIDIA GeForce RTX 4070"
+    assert names["02:00.0"] == "Intel Wi-Fi 6E(802.11ax) AX210/AX1675* 2x2 [Typhoon Peak]"
+    assert names["03:00.0"] == "Intel Arc Graphics"
+    assert hardware.check([Device("gpu", names["01:00.0"], "10de")])[0].item.source == "gpu"
 
     devices = hardware.detect_linux(tmp_path, lspci)
     assert [(d.category, d.name) for d in devices] == [
