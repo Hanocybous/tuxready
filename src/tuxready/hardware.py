@@ -17,6 +17,9 @@ NVIDIA, AMD, INTEL = "10de", "1002", "8086"
 BROADCOM, REALTEK, MEDIATEK = "14e4", "10ec", "14c3"
 QUALCOMM = {"168c", "17cb"}
 
+# Virtual machine display adapters: QEMU/Bochs, Red Hat (QXL, virtio), VMware, VirtualBox, Hyper-V
+VIRTUAL_GPU_VENDORS = {"1234", "1b36", "1af4", "15ad", "80ee", "1414"}
+
 # USB vendors that make (almost only) fingerprint readers.
 FINGERPRINT_VENDORS = {"27c6", "138a", "06cb", "10a5", "1c7a", "2808"}
 
@@ -211,7 +214,7 @@ def _result(device: Device, verdict: Verdict, summary: str, **extra) -> Result:
 
 def _check_one(d: Device, hybrid: bool) -> Result | None:
     if d.category == "gpu":
-        return _check_gpu(d, hybrid)
+        return None if d.vendor_id in VIRTUAL_GPU_VENDORS else _check_gpu(d, hybrid)
     if d.category == "wifi":
         return _check_wifi(d)
     if d.category == "fingerprint":

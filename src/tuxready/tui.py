@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import sys
 from collections.abc import Callable
 from pathlib import Path
 
@@ -40,6 +42,15 @@ SYMBOL = {
     Verdict.BLOCKED: "✗",
     Verdict.UNKNOWN: "?",
 }
+
+# The old Windows console's font has no ✓ ✗ ⇄ (they show as boxes); Windows Terminal sets
+# WT_SESSION, VS Code and others set TERM_PROGRAM.
+LEGACY_CONSOLE = sys.platform == "win32" and not (
+    os.environ.get("WT_SESSION") or os.environ.get("TERM_PROGRAM")
+)
+if LEGACY_CONSOLE:
+    SYMBOL = {**SYMBOL, Verdict.NATIVE: "+", Verdict.WORKS: "+", Verdict.ALTERNATIVE: ">"}
+    SYMBOL[Verdict.BLOCKED] = "x"
 
 VERDICT_STYLE = {
     Verdict.NATIVE: "bold green",
@@ -108,7 +119,7 @@ class TuxReadyApp(App):
         self.shown: list[Result] = []
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield Header(icon="o") if LEGACY_CONSOLE else Header()
         yield Static(self._intro(), id="score")
         yield ProgressBar(total=len(self.items), id="progress", show_eta=False)
         search = Input(placeholder="Search by name (Esc to clear)", id="search")
@@ -148,7 +159,8 @@ class TuxReadyApp(App):
         self._refresh_table()
         if self.checker.http.failures:
             self.notify(
-                f"{self.checker.http.failures} online lookups failed; some results may be missing.",
+                f"{self.checker.http.failures} online lookups failed; some results may be missing."
+                f"\nLast error: {self.checker.http.last_error}",
                 severity="warning",
                 timeout=8,
             )

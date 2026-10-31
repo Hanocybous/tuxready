@@ -194,6 +194,11 @@ def test_detect_linux_from_fake_sysfs(tmp_path):
     ]
 
 
+def test_virtual_machine_gpu_is_skipped():
+    vm = Device("gpu", "Microsoft Basic Display Adapter", "1b36", "0100")
+    assert hardware.check([vm]) == []
+
+
 def test_hardware_is_not_scored_but_reported():
     results = hardware.check([Device("wifi", "Broadcom BCM4360", "14e4", "43a0")])
     assert report.score(results).percent is None

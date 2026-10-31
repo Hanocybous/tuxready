@@ -7,6 +7,7 @@ import sys
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -37,6 +38,7 @@ class Http:
         self.refresh = refresh
         self.timeout = timeout
         self.failures = 0
+        self.last_error = ""
         self._lock = threading.Lock()
 
     def get_json(self, url: str, ttl: float = DAY):
@@ -59,6 +61,7 @@ class Http:
         request.add_header("Accept", "application/json")
         if payload is not None:
             request.add_header("Content-Type", "application/json")
+        error_text = ""
         for attempt in range(2):
             try:
                 with urllib.request.urlopen(request, timeout=self.timeout) as response:
@@ -66,17 +69,19 @@ class Http:
                 self._write_cache(path, data)
                 return data
             except urllib.error.HTTPError as error:
+                error_text = f"HTTP {error.code}"
                 if error.code == 404:
                     self._write_cache(path, None)  # remember "not found"
                     return None
                 if error.code < 500 and error.code != 429:
                     break
-            except (urllib.error.URLError, TimeoutError, OSError, ValueError):
-                pass
+            except (urllib.error.URLError, TimeoutError, OSError, ValueError) as error:
+                error_text = str(getattr(error, "reason", None) or error)
             if attempt == 0:
                 time.sleep(1.0)
         with self._lock:
             self.failures += 1
+            self.last_error = f"{urllib.parse.urlsplit(url).hostname}: {error_text}"
         # offline: fall back to the old cached copy
         return None if cached is _MISSING else cached
 
