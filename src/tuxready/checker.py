@@ -39,6 +39,8 @@ _PROTON_TIERS = {
     ),
 }
 
+_TIER_ORDER = ["borked", "bronze", "silver", "gold", "platinum"]
+
 Progress = Callable[[int, int, Result], None]
 
 
@@ -85,7 +87,11 @@ class Checker:
 
     def check(self, item: Item) -> Result:
         # knowledge base first, it has the alternatives
-        if item.steam_appid is None:
+        if item.steam_appid is not None:
+            entry = knowledge.match_appid(item.steam_appid)
+            if entry is not None:
+                return from_knowledge(item, entry)
+        else:
             entry = knowledge.match(item.name)
             if entry is not None and (
                 item.kind is None or entry.get("kind", item.kind.value) == item.kind.value
@@ -179,10 +185,16 @@ class Checker:
             summary = steam.protondb(self.http, appid)
             tier = (summary or {}).get("tier")
             if tier in _PROTON_TIERS:
-                verdict, text = _PROTON_TIERS[tier]
-                text = text.replace("(ProtonDB:", "(Steam version, ProtonDB:")
                 trending = (summary or {}).get("trendingTier")
-                if trending and trending != tier and trending in _PROTON_TIERS:
+                if trending not in _PROTON_TIERS:
+                    trending = tier
+                # Proton keeps improving, so better recent reports describe today
+                shown = max(tier, trending, key=_TIER_ORDER.index)
+                verdict, text = _PROTON_TIERS[shown]
+                text = text.replace("(ProtonDB:", "(Steam version, ProtonDB:")
+                if shown != tier:
+                    text += f" That's from recent reports; overall it's {tier.capitalize()}."
+                elif trending != tier:
                     text += f" Recent reports are {trending.capitalize()}."
                 reports = (summary or {}).get("total") or 0
                 if reports < 5:

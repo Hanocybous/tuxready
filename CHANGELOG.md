@@ -5,6 +5,11 @@
 - Cleaned up comments and docstrings, shorter README
 - Plain `...` and `-` instead of typographic characters in the UI
 - Dependabot for GitHub Actions and Python dependencies
+- Better recent ProtonDB reports now beat an older, lower overall rating
+- App-list entries can match Steam games by ID (`steam_appids`), e.g. Wallpaper Engine
+- 13 more apps known (Tailscale, LTspice, Virtual Desktop, Overwolf, ...)
+- Riot Client/Vanguard, device drivers and helper tools no longer show up as separate apps
+- Fixed version numbers left in names like "FurMark 2.10.2 x64"
 
 ## 0.1.0 - 2026-10-29
 
