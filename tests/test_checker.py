@@ -80,6 +80,7 @@ def test_knowledge_file_is_valid():
         assert entry["verdict"] in valid, entry
         assert entry.get("kind") in (None, "app", "game"), entry
         assert entry.get("install") in (None, "package", "vendor", "none"), entry
+        assert all(isinstance(i, int) for i in entry.get("steam_appids", [])), entry
         for alt in entry.get("alternatives", []):
             assert alt["name"], entry
 
@@ -142,6 +143,36 @@ def test_proton_tiers(tier, verdict):
     checker = make_checker({"summaries/42": {"tier": tier, "total": 50}})
     result = checker.check(Item("Some Game", Kind.GAME, "steam", steam_appid=42))
     assert result.verdict is verdict
+
+
+def test_better_recent_proton_reports_win():
+    better = make_checker(
+        {"summaries/42": {"tier": "silver", "trendingTier": "platinum", "total": 50}}
+    )
+    result = better.check(Item("Some Game", Kind.GAME, "steam", steam_appid=42))
+    assert result.verdict is Verdict.WORKS
+    assert "overall it's Silver" in result.summary
+
+    worse = make_checker(
+        {"summaries/42": {"tier": "silver", "trendingTier": "bronze", "total": 50}}
+    )
+    result = worse.check(Item("Some Game", Kind.GAME, "steam", steam_appid=42))
+    assert result.verdict is Verdict.TWEAKS
+    assert "Recent reports are Bronze" in result.summary
+
+
+def test_knowledge_base_overrides_steam_game_by_appid():
+    checker = make_checker({"summaries/431960": {"tier": "bronze", "total": 50}})
+    result = checker.check(Item("Wallpaper Engine", None, "steam", steam_appid=431960))
+    assert result.verdict is Verdict.TWEAKS
+    assert "linux-wallpaperengine" in result.alternatives
+    assert not checker.http.calls
+    # a Steam game whose name starts like an app-list entry still goes to ProtonDB
+    other = make_checker({"summaries/42": {"tier": "gold", "total": 50}})
+    assert (
+        other.check(Item("Tailscale Racing", None, "steam", steam_appid=42)).verdict
+        is Verdict.WORKS
+    )
 
 
 def test_unknown_thing_falls_back_to_flathub_then_steam_search():

@@ -76,6 +76,9 @@ def test_windows_filter_hides_noise():
         {"DisplayName": "KB5005463", "ReleaseType": "Update"},
         {"DisplayName": "Elden Ring", "KeyName": "Steam App 1245620"},
         {"DisplayName": ""},
+        {"DisplayName": "Riot Vanguard"},
+        {"DisplayName": "THX Spatial Audio USB 1532-0579!057A"},
+        {"DisplayName": "Samsung_MonSetup"},
     ):
         assert not windows.is_user_facing(noise), noise
 
@@ -89,6 +92,7 @@ def test_clean_name():
     assert windows.clean_name("Notepad++ (64-bit x64)") == "Notepad++"
     assert windows.clean_name("7-Zip 24.08 (x64)") == "7-Zip"
     assert windows.clean_name("Cyberpunk 2077") == "Cyberpunk 2077"
+    assert windows.clean_name("Geeks3D FurMark 2.10.2 x64") == "Geeks3D FurMark"
 
 
 def test_listfile():

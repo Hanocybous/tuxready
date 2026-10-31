@@ -29,7 +29,9 @@ _NOISE = re.compile(
       | java\ (auto\ updater|update) | steamworks | epic\ online\ services
       | epic\ games\ launcher\ prerequisites
       | ea\ (app\ )?installer | battleye | easyanticheat | anti\ ?cheat\ ?expert
-      | microsoft\ policy\ platform
+      | microsoft\ policy\ platform | riot\ vanguard | riot\ client
+      | .*\ usb\ [0-9a-f]{4}-[0-9a-f]{4}  # drivers named after a USB device ID
+      | samsung_monsetup | futuremark\ systeminfo
       # Helpers and runtimes that come bundled with other programs:
       | mozilla\ maintenance\ service | google\ update | microsoft\ windows\ application\ compat
       | microsoft\ system\ clr\ types | microsoft\ sql\ server\ \d+\ management\ objects
@@ -69,6 +71,7 @@ def clean_name(name: str) -> str:
         name,
         flags=re.I,
     )
+    name = re.sub(r"\s+(x64|x86|64-bit|32-bit)$", "", name, flags=re.I)  # "FurMark 2.10.2 x64"
     name = re.sub(r"\s+-\s+[a-z]{2}-[a-z]{2}$", "", name, flags=re.I)  # "Microsoft 365 - en-us"
     name = re.sub(r"\s+(version\s+)?v?\d+(\.\d+)+[\w.+-]*$", "", name, flags=re.I)
     return name.strip()

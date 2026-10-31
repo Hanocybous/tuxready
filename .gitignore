@@ -8,3 +8,6 @@ dist/
 .ruff_cache/
 tuxready-report.md
 tuxready-setup.sh
+
+# graphify output
+graphify-out/

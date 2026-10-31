@@ -25,3 +25,8 @@ def match(name: str) -> dict | None:
             if starts_with_words(wanted, alias) and (best is None or len(alias) > best[0]):
                 best = (len(alias), entry)
     return best[1] if best else None
+
+
+def match_appid(appid: int) -> dict | None:
+    # Steam games match by ID only: name prefixes could hit unrelated games
+    return next((e for e in entries() if appid in e.get("steam_appids", ())), None)

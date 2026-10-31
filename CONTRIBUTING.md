@@ -22,6 +22,8 @@ Everything tuxready knows about Windows programs is in
 - **flatpak**: (optional) Flathub ID when the app itself runs natively.
 - **alternatives**: (optional) each with a `flatpak` ID or a `url`.
 - **kind**: (optional) `"game"` for games listed here, e.g. Roblox.
+- **steam_appids**: (optional) Steam IDs this entry overrides ProtonDB for, e.g. `[431960]` for
+  Wallpaper Engine. Steam games are matched by ID only, never by name.
 
 Before opening a pull request, run:
 
