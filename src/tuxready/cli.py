@@ -163,7 +163,8 @@ def main(argv: list[str] | None = None) -> int:
         print("\r" + " " * 30 + "\r", end="", file=sys.stderr)
     if http.failures:
         print(
-            f"Note: {http.failures} online lookups failed; results may be incomplete.",
+            f"Note: {http.failures} online lookups failed; results may be incomplete. "
+            f"Last error: {http.last_error}",
             file=sys.stderr,
         )
 

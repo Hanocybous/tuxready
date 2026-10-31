@@ -10,6 +10,11 @@
 - 13 more apps known (Tailscale, LTspice, Virtual Desktop, Overwolf, ...)
 - Riot Client/Vanguard, device drivers and helper tools no longer show up as separate apps
 - Fixed version numbers left in names like "FurMark 2.10.2 x64"
+- Shorter GPU names on Linux ("Intel Arc Graphics 130V/140V GPU", "NVIDIA GeForce RTX 4070")
+- The Type column shows the hardware part (GPU, Wi-Fi, ...); JSON `source` for hardware is now that part type
+- Plain symbols (+ x > ?) in the old Windows 10 console, whose font has no ✓ ✗ ⇄
+- Virtual machine display adapters are no longer reported as hardware
+- "Online lookups failed" now says which site failed and why
 
 ## 0.1.0 - 2026-10-29
 
