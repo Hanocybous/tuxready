@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 - 2026-11-01
 
 - Cleaned up comments and docstrings, shorter README
 - Plain `...` and `-` instead of typographic characters in the UI
