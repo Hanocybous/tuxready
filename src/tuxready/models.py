@@ -67,7 +67,7 @@ VERDICT_WEIGHTS: dict[Verdict, float | None] = {
 class Item:
     name: str
     kind: Kind | None  # None = not known yet; the checker works it out
-    source: str  # "windows", "steam", "list"
+    source: str  # "windows", "steam", "list", or a hardware category ("gpu", "wifi", ...)
     steam_appid: int | None = None
     publisher: str | None = None
 
