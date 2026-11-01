@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tuxready"
-version = "0.1.0"
+version = "0.1.1"
 description = "Check whether your Windows apps and games will work on Linux before you switch."
 readme = "README.md"
 license = "MIT"
