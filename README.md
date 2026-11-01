@@ -28,7 +28,7 @@ SmartScreen will warn you because the exe isn't signed; click *More info* and *R
 **Linux:** download `tuxready-linux-x64` from the same page, or:
 
 ```bash
-pipx install git+https://github.com/Hanocybous/tuxready
+pipx install tuxready
 ```
 
 The downloads are for 64-bit x86. The Linux binary needs glibc 2.35+ (Ubuntu 22.04, Mint 21,
