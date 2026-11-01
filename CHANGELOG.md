@@ -15,6 +15,7 @@
 - Plain symbols (+ x > ?) in the old Windows 10 console, whose font has no ✓ ✗ ⇄
 - Virtual machine display adapters are no longer reported as hardware
 - "Online lookups failed" now says which site failed and why
+- HTTPS is checked by the operating system (truststore), fixing failed lookups on fresh Windows installs
 
 ## 0.1.0 - 2026-10-29
 

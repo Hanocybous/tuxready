@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import ssl
 import sys
 import threading
 import time
@@ -11,11 +12,16 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import truststore
+
 from tuxready import __version__
 
 USER_AGENT = f"tuxready/{__version__} (+https://github.com/Hanocybous/tuxready)"
 DAY = 24 * 60 * 60
 _MISSING = object()
+# Verify HTTPS with the OS (Windows/macOS fetch missing root certificates on demand; Python's
+# own check doesn't, so lookups failed on fresh Windows installs).
+_SSL_CONTEXT = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
 
 def default_cache_dir() -> Path:
@@ -64,7 +70,9 @@ class Http:
         error_text = ""
         for attempt in range(2):
             try:
-                with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                with urllib.request.urlopen(
+                    request, timeout=self.timeout, context=_SSL_CONTEXT
+                ) as response:
                     data = json.loads(response.read().decode("utf-8"))
                 self._write_cache(path, data)
                 return data

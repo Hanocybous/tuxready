@@ -11,7 +11,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Hanocybous" }]
 requires-python = ">=3.10"
-dependencies = ["textual>=0.80"]
+dependencies = ["textual>=0.80", "truststore>=0.10"]
 keywords = ["linux", "windows", "proton", "steam", "migration", "compatibility", "tui"]
 classifiers = [
     "Environment :: Console",
